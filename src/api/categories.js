@@ -1,6 +1,7 @@
 import api from './axios'
 
 export const listCategories = () => api.get('/public/categories')
+export const getServiceTypes = (categoryId) => api.get(`/public/categories/${categoryId}/service-types`)
 
 export const adminListCategories = (params) => api.get('/admin/categories', { params })
 export const adminCreateCategory = (data) => api.post('/admin/categories', data)

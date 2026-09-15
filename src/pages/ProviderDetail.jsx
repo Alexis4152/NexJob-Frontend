@@ -33,9 +33,14 @@ export default function ProviderDetail() {
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl font-bold text-gray-900">{provider.businessName}</h1>
-            {provider.isVerified && <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">Verificado</span>}
+            {provider.isVerified && (
+              <span className="inline-flex items-center gap-1 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                Verificado
+              </span>
+            )}
           </div>
-          <p className="text-gray-500">{provider.city} {provider.yearsExperience ? `· ${provider.yearsExperience} anos de experiencia` : ''}</p>
+          <p className="text-gray-500">{provider.city} {provider.yearsExperience ? `· ${provider.yearsExperience} años de experiencia` : ''}</p>
           <div className="flex items-center gap-2 mt-2">
             <RatingStars value={provider.averageRating} />
             <span className="text-sm text-gray-500">{provider.averageRating ?? 0} ({provider.totalReviews ?? 0} resenas)</span>
@@ -69,7 +74,7 @@ export default function ProviderDetail() {
                 <span className="font-semibold text-gray-900">
                   {formatCurrency(s.price)} <span className="text-xs font-normal text-gray-500">({PRICE_TYPE_LABELS[s.priceType]})</span>
                 </span>
-                <Link to={`/contratar/${s.id}`} className="btn-primary text-sm">Contratar</Link>
+                <Link to={`/contratar/${s.id}`} className="btn-primary text-sm">Cotizar</Link>
               </div>
             </div>
           ))}

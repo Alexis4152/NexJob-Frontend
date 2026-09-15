@@ -9,7 +9,7 @@ export default function RegisterProvider() {
   const [categories, setCategories] = useState([])
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', phone: '', password: '',
-    businessName: '', bio: '', yearsExperience: '', city: '', categoryIds: [],
+    businessName: '', bio: '', yearsExperience: '', city: '', postalCode: '', categoryIds: [],
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -91,10 +91,18 @@ export default function RegisterProvider() {
               <input required className="input" value={form.city} onChange={set('city')} />
             </label>
             <label className="block text-sm">
-              <span className="block text-gray-700 mb-1 font-medium">Anos de experiencia</span>
-              <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
+              <span className="block text-gray-700 mb-1 font-medium">
+                Codigo postal <span className="text-gray-400 font-normal">(opcional)</span>
+              </span>
+              <input className="input" inputMode="numeric" maxLength={5} placeholder="Ej. 06000"
+                value={form.postalCode} onChange={set('postalCode')} />
+              <span className="block text-xs text-gray-400 mt-1">Nos ayuda a mostrarte a clientes cercanos con mas precision.</span>
             </label>
           </div>
+          <label className="block text-sm">
+            <span className="block text-gray-700 mb-1 font-medium">Anos de experiencia</span>
+            <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
+          </label>
           <label className="block text-sm">
             <span className="block text-gray-700 mb-1 font-medium">Cuentanos sobre tu trabajo</span>
             <textarea className="input" rows={3} value={form.bio} onChange={set('bio')} />

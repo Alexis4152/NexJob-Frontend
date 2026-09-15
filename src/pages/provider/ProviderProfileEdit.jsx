@@ -11,7 +11,7 @@ export default function ProviderProfileEdit() {
   const { notify } = useNotify()
   const [categories, setCategories] = useState([])
   const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ businessName: '', bio: '', yearsExperience: '', city: '', categoryIds: [] })
+  const [form, setForm] = useState({ businessName: '', bio: '', yearsExperience: '', city: '', postalCode: '', categoryIds: [] })
   const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -27,7 +27,7 @@ export default function ProviderProfileEdit() {
       setProfile(p)
       setForm({
         businessName: p.businessName, bio: p.bio || '', yearsExperience: p.yearsExperience || '',
-        city: p.city, categoryIds: p.categories.map((c) => c.id),
+        city: p.city, postalCode: p.postalCode || '', categoryIds: p.categories.map((c) => c.id),
       })
     }).finally(() => setLoading(false))
   }, [])
@@ -150,10 +150,17 @@ export default function ProviderProfileEdit() {
               <input required className="input" value={form.city} onChange={set('city')} />
             </label>
             <label className="block text-sm">
-              <span className="block text-gray-700 mb-1 font-medium">Anos de experiencia</span>
-              <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
+              <span className="block text-gray-700 mb-1 font-medium">
+                Codigo postal <span className="text-gray-400 font-normal">(opcional)</span>
+              </span>
+              <input className="input" inputMode="numeric" maxLength={5} placeholder="Ej. 06000"
+                value={form.postalCode} onChange={set('postalCode')} />
             </label>
           </div>
+          <label className="block text-sm">
+            <span className="block text-gray-700 mb-1 font-medium">Anos de experiencia</span>
+            <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
+          </label>
           <label className="block text-sm">
             <span className="block text-gray-700 mb-1 font-medium">Sobre tu trabajo</span>
             <textarea className="input" rows={3} value={form.bio} onChange={set('bio')} />
