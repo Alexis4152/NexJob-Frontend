@@ -72,6 +72,9 @@ export default function ProviderServices() {
               <h3 className="font-semibold text-gray-900">{s.title}</h3>
               <p className="text-sm text-gray-500">{s.categoryName}</p>
               <p className="font-semibold text-gray-900 mt-1">{formatCurrency(s.price)} <span className="text-xs font-normal text-gray-500">({PRICE_TYPE_LABELS[s.priceType]})</span></p>
+              <span className={`inline-block text-xs mt-1 px-2 py-0.5 rounded-full ${s.atClientLocation ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                {s.atClientLocation ? '🚗 A domicilio' : '📍 En sitio del prestador'}
+              </span>
               <div className="flex gap-2 mt-3">
                 <Link to={`/prestador/servicios/${s.id}`} className="btn-secondary text-xs flex-1 text-center py-1.5 flex items-center justify-center gap-1">
                   <span aria-hidden="true">✏️</span> Editar

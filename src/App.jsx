@@ -14,6 +14,8 @@ import ProviderDetail from './pages/ProviderDetail'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import RegisterProvider from './pages/RegisterProvider'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import BookingNew from './pages/BookingNew'
 import MyBookings from './pages/MyBookings'
 import MyBookingDetail from './pages/MyBookingDetail'
@@ -52,6 +54,8 @@ export default function App() {
                 <Route path="login" element={<Login />} />
                 <Route path="registro" element={<Register />} />
                 <Route path="registro-prestador" element={<RegisterProvider />} />
+                <Route path="olvide-password" element={<ForgotPassword />} />
+                <Route path="restablecer-password" element={<ResetPassword />} />
                 <Route path="ayuda" element={<Help />} />
 
                 <Route path="contratar/:serviceId" element={<PrivateRoute role="CLIENT"><BookingNew /></PrivateRoute>} />

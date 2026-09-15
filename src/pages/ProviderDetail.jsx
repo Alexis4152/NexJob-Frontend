@@ -62,6 +62,9 @@ export default function ProviderDetail() {
               {s.estimatedDurationValue ? (
                 <p className="text-xs text-gray-500 mt-1">Duracion estimada: {s.estimatedDurationValue} {DURATION_UNIT_LABELS[s.estimatedDurationUnit] || ''}</p>
               ) : null}
+              <span className={`inline-block text-xs mt-2 px-2 py-0.5 rounded-full ${s.atClientLocation ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                {s.atClientLocation ? '🚗 A domicilio' : '📍 En sitio del prestador'}
+              </span>
               <div className="flex items-center justify-between mt-3">
                 <span className="font-semibold text-gray-900">
                   {formatCurrency(s.price)} <span className="text-xs font-normal text-gray-500">({PRICE_TYPE_LABELS[s.priceType]})</span>

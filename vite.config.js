@@ -8,11 +8,11 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8082',
+        target: 'http://localhost:8083',
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'http://localhost:8082',
+        target: 'http://localhost:8083',
         changeOrigin: true,
       },
     },

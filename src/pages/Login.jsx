@@ -45,6 +45,9 @@ export default function Login() {
             <span className="block text-gray-700 mb-1 font-medium">Contrasena</span>
             <input required type="password" className="input" value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
+          <div className="text-right -mt-2">
+            <Link to="/olvide-password" className="text-sm text-primary-700 hover:underline">¿Olvidaste tu contrasena?</Link>
+          </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? 'Ingresando...' : 'Iniciar sesion'}
           </button>
