@@ -15,3 +15,6 @@ export const uploadMyProviderImage = (file) => {
 
 export const adminListProviders = (params) => api.get('/admin/providers', { params })
 export const adminSetProviderVerified = (id, value) => api.patch(`/admin/providers/${id}/verified`, { value })
+export const adminSetProviderEmailVerified = (id, value) => api.patch(`/admin/providers/${id}/email-verified`, { value })
+export const adminSetProviderPhoneVerified = (id, value) => api.patch(`/admin/providers/${id}/phone-verified`, { value })
+export const adminSetProviderProfileComplete = (id, value) => api.patch(`/admin/providers/${id}/profile-complete`, { value })

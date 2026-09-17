@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
+import NotificationBell from './NotificationBell'
 
 const navLinkClass = ({ isActive }) =>
   `text-sm font-medium transition-colors ${isActive ? 'text-primary-700' : 'text-gray-600 hover:text-gray-900'}`
@@ -50,6 +51,7 @@ export default function Header() {
               <Link to="/registro" className="btn-primary text-sm">Registrarme</Link>
             </>
           )}
+          {user && <NotificationBell />}
           {user && (
             <div className="relative">
               <button onClick={() => setMenuOpen((o) => !o)} className="flex items-center gap-2 text-sm font-medium text-gray-700">

@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { adminListProviders, adminSetProviderVerified } from '../../api/providers'
+import {
+  adminListProviders, adminSetProviderVerified, adminSetProviderEmailVerified,
+  adminSetProviderPhoneVerified, adminSetProviderProfileComplete,
+} from '../../api/providers'
 import { useNotify } from '../../context/NotifyContext'
 import RatingStars from '../../components/RatingStars'
 import AdminPagination from '../../components/AdminPagination'
+
+const VERIFICATION_FIELDS = [
+  { key: 'isVerified', label: 'Identidad', setter: adminSetProviderVerified },
+  { key: 'emailVerified', label: 'Correo', setter: adminSetProviderEmailVerified },
+  { key: 'phoneVerified', label: 'Telefono', setter: adminSetProviderPhoneVerified },
+  { key: 'profileComplete', label: 'Perfil', setter: adminSetProviderProfileComplete },
+]
 
 export default function AdminProviders() {
   const { notify } = useNotify()
@@ -19,10 +29,10 @@ export default function AdminProviders() {
 
   useEffect(() => { load() }, [page])
 
-  async function toggleVerified(p) {
+  async function toggleField(provider, field) {
     try {
-      await adminSetProviderVerified(p.id, !p.isVerified)
-      notify('Estado de verificacion actualizado', 'success')
+      await field.setter(provider.id, !provider[field.key])
+      notify(`${field.label}: actualizado`, 'success')
       load()
     } catch (err) {
       notify(err.response?.data?.message || 'No se pudo actualizar', 'error')
@@ -43,13 +53,13 @@ export default function AdminProviders() {
           <p className="text-gray-500 text-sm p-4">Cargando...</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[600px]">
+            <table className="w-full text-sm min-w-[720px]">
               <thead className="bg-gray-50 text-left text-gray-500">
                 <tr>
                   <th className="px-4 py-3 font-medium">Negocio</th>
                   <th className="px-4 py-3 font-medium">Ciudad</th>
                   <th className="px-4 py-3 font-medium">Calificacion</th>
-                  <th className="px-4 py-3 font-medium">Verificado</th>
+                  <th className="px-4 py-3 font-medium">Verificacion (clic para autorizar)</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -60,14 +70,22 @@ export default function AdminProviders() {
                     <td className="px-4 py-3 text-gray-500">{p.city}</td>
                     <td className="px-4 py-3"><RatingStars value={p.averageRating} size="text-sm" /></td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${p.isVerified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
-                        {p.isVerified ? 'Verificado' : 'Sin verificar'}
-                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {VERIFICATION_FIELDS.map((f) => (
+                          <button
+                            key={f.key}
+                            onClick={() => toggleField(p, f)}
+                            title={p[f.key] ? `Quitar ${f.label.toLowerCase()}` : `Autorizar ${f.label.toLowerCase()}`}
+                            className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-1 rounded-full transition-colors ${
+                              p[f.key] ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                            }`}
+                          >
+                            {p[f.key] ? '✓' : '○'} {f.label}
+                          </button>
+                        ))}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <button onClick={() => toggleVerified(p)} className="text-primary-700 hover:underline mr-3">
-                        {p.isVerified ? 'Quitar verificacion' : 'Verificar'}
-                      </button>
                       <Link to={`/prestadores/${p.id}`} className="text-gray-500 hover:underline">Ver perfil</Link>
                     </td>
                   </tr>

@@ -8,6 +8,12 @@ import { useNotify } from '../context/NotifyContext'
 const PRICE_TYPE_LABELS = { FIJO: 'precio fijo', POR_HORA: 'por hora', COTIZACION: 'a cotizar' }
 const PAYMENT_METHOD_LABELS = { EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia' }
 
+const URGENCY_OPTIONS = [
+  { value: 'URGENTE', label: 'Urgente', description: 'Lo necesito hoy', dot: 'bg-red-500' },
+  { value: 'PRONTO', label: 'Pronto', description: 'En los proximos dias', dot: 'bg-yellow-400' },
+  { value: 'PROGRAMADO', label: 'Programado', description: 'Puedo esperar', dot: 'bg-green-500' },
+]
+
 function pad(n) {
   return String(n).padStart(2, '0')
 }
@@ -23,7 +29,7 @@ export default function BookingNew() {
   const [service, setService] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({ description: '', addressLine: '', city: '', scheduledAt: '', paymentMethod: 'EFECTIVO' })
+  const [form, setForm] = useState({ description: '', addressLine: '', city: '', scheduledAt: '', paymentMethod: 'EFECTIVO', urgency: 'PROGRAMADO' })
   const [error, setError] = useState('')
   const [busySlots, setBusySlots] = useState([])
 
@@ -44,12 +50,15 @@ export default function BookingNew() {
   }
 
   const isSlotTaken = form.scheduledAt !== '' && busySlots.some((s) => s.slice(0, 16) === form.scheduledAt)
+  const selectedUrgency = URGENCY_OPTIONS.find((o) => o.value === form.urgency)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     if (isSlotTaken) {
-      setError('El prestador ya tiene una visita agendada en esa fecha y hora. Elige otro horario.')
+      const message = 'El prestador ya tiene una visita agendada en esa fecha y hora. Elige otro horario.'
+      setError(message)
+      notify(message, 'error')
       return
     }
     setSubmitting(true)
@@ -58,7 +67,9 @@ export default function BookingNew() {
       notify('Solicitud enviada al prestador', 'success')
       navigate(`/mis-contrataciones/${res.data.data.id}`)
     } catch (err) {
-      setError(err.response?.data?.message || 'No se pudo enviar la solicitud')
+      const message = err.response?.data?.message || 'No se pudo enviar la solicitud'
+      setError(message)
+      notify(message, 'error')
     } finally {
       setSubmitting(false)
     }
@@ -109,6 +120,17 @@ export default function BookingNew() {
                 </ul>
               </details>
             )}
+          </label>
+          <label className="block text-sm">
+            <span className="block text-gray-700 mb-1 font-medium">¿Que tan pronto necesitas el servicio?</span>
+            <div className="relative">
+              <span className={`absolute left-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full pointer-events-none ${selectedUrgency.dot}`} />
+              <select className="input pl-8" value={form.urgency} onChange={set('urgency')}>
+                {URGENCY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label} — {opt.description}</option>
+                ))}
+              </select>
+            </div>
           </label>
           <div>
             <span className="block text-gray-700 mb-2 text-sm font-medium">Metodo de pago</span>

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import RatingStars from './RatingStars'
-import { formatCurrency } from '../utils/format'
+import TrustBadge from './TrustBadge'
+import { formatCurrency, formatResponseTime } from '../utils/format'
 
 export default function ProviderCard({ provider }) {
   return (
-    <Link to={`/prestadores/${provider.id}`} className="card p-4 flex flex-col gap-3 hover:shadow-md transition-shadow">
+    <Link to={`/prestadores/${provider.id}`} className="bg-white rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 p-4 flex flex-col gap-3">
       <div className="flex gap-4">
         <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 shrink-0 overflow-hidden">
           {provider.profileImageUrl ? (
@@ -16,12 +17,7 @@ export default function ProviderCard({ provider }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-gray-900 truncate">{provider.businessName}</h3>
-            {provider.isVerified && (
-              <span className="inline-flex items-center gap-1 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full shrink-0">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
-                Verificado
-              </span>
-            )}
+            <TrustBadge tier={provider.trustTier} />
           </div>
           <p className="text-sm text-gray-500 truncate">
             {provider.city}{provider.distanceKm != null && ` · a ${provider.distanceKm.toFixed(1)} km aprox.`}
@@ -44,6 +40,12 @@ export default function ProviderCard({ provider }) {
           <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
             Con fotos
+          </span>
+        )}
+        {formatResponseTime(provider.averageResponseMinutes) && (
+          <span className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Responde en {formatResponseTime(provider.averageResponseMinutes)}
           </span>
         )}
       </div>

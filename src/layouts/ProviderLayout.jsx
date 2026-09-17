@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { usePlatformConfig } from '../context/PlatformConfigContext'
+import NotificationBell from '../components/NotificationBell'
 
 const LINKS = [
   { to: '/prestador', end: true, icon: '🗂️', label: 'Tablero de trabajos' },
@@ -75,9 +76,11 @@ export default function ProviderLayout() {
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="lg:hidden flex items-center gap-3 bg-white border-b border-gray-200 px-4 py-3">
-          <button onClick={() => setDrawerOpen(true)} className="p-2 text-gray-600" aria-label="Abrir menu">☰</button>
-          <span className="font-semibold text-gray-800">Panel de prestador</span>
+        <header className="flex items-center gap-3 bg-white border-b border-gray-200 px-4 py-3">
+          <button onClick={() => setDrawerOpen(true)} className="lg:hidden p-2 text-gray-600" aria-label="Abrir menu">☰</button>
+          <span className="font-semibold text-gray-800 lg:hidden">Panel de prestador</span>
+          <div className="flex-1" />
+          <NotificationBell />
         </header>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <Outlet />

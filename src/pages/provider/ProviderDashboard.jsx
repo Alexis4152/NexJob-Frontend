@@ -142,13 +142,13 @@ export default function ProviderDashboard() {
                       {section.key === 'SOLICITADO' && (
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => moveTo(b, 'ACEPTADO')} className="btn-primary text-xs flex-1 py-1">Aceptar</button>
-                          <button onClick={() => reject(b)} className="btn-secondary text-xs flex-1 py-1">Rechazar</button>
+                          <button onClick={() => reject(b)} className="btn-danger text-xs flex-1 py-1">Rechazar</button>
                         </div>
                       )}
                       {section.key === 'ACEPTADO' && (
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                           <button onClick={() => moveTo(b, 'EN_PROCESO')} className="btn-primary text-xs flex-1 py-1">Iniciar</button>
-                          <button onClick={() => cancel(b)} className="btn-secondary text-xs flex-1 py-1">Cancelar</button>
+                          <button onClick={() => cancel(b)} className="btn-danger text-xs flex-1 py-1">Cancelar</button>
                         </div>
                       )}
                     </div>
