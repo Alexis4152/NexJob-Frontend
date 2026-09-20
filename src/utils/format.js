@@ -14,6 +14,12 @@ export function formatDateOnly(value) {
   return new Date(value).toLocaleDateString('es-MX', { dateStyle: 'medium' })
 }
 
+/** dd/mm/yyyy, HH:mm */
+export function formatDateSlash(value) {
+  if (!value) return ''
+  return new Date(value).toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 /** minutos -> "~X min" / "~X hrs" / "~X dias". null/undefined si no hay dato (no inventa un valor). */
 export function formatResponseTime(minutes) {
   if (minutes === null || minutes === undefined) return null

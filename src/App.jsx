@@ -19,6 +19,9 @@ import ResetPassword from './pages/ResetPassword'
 import BookingNew from './pages/BookingNew'
 import MyBookings from './pages/MyBookings'
 import MyBookingDetail from './pages/MyBookingDetail'
+import QuoteRequestNew from './pages/QuoteRequestNew'
+import QuoteRequestDetail from './pages/QuoteRequestDetail'
+import MyQuoteRequests from './pages/MyQuoteRequests'
 import MyProfile from './pages/MyProfile'
 import Help from './pages/Help'
 import NotFound from './pages/NotFound'
@@ -30,6 +33,8 @@ import ProviderProfileEdit from './pages/provider/ProviderProfileEdit'
 import ProviderBookingDetail from './pages/provider/ProviderBookingDetail'
 import ProviderReviews from './pages/provider/ProviderReviews'
 import ProviderCalendar from './pages/provider/ProviderCalendar'
+import ProviderQuoteRequests from './pages/provider/ProviderQuoteRequests'
+import ProviderQuoteRequestDetail from './pages/provider/ProviderQuoteRequestDetail'
 
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminCategories from './pages/admin/AdminCategories'
@@ -61,6 +66,9 @@ export default function App() {
                 <Route path="contratar/:serviceId" element={<PrivateRoute role="CLIENT"><BookingNew /></PrivateRoute>} />
                 <Route path="mis-contrataciones" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
                 <Route path="mis-contrataciones/:id" element={<PrivateRoute><MyBookingDetail /></PrivateRoute>} />
+                <Route path="cotizaciones/nueva" element={<PrivateRoute role="CLIENT"><QuoteRequestNew /></PrivateRoute>} />
+                <Route path="cotizaciones" element={<PrivateRoute role="CLIENT"><MyQuoteRequests /></PrivateRoute>} />
+                <Route path="cotizaciones/:id" element={<PrivateRoute role="CLIENT"><QuoteRequestDetail /></PrivateRoute>} />
                 <Route path="mi-cuenta" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
 
                 <Route path="*" element={<NotFound />} />
@@ -75,6 +83,8 @@ export default function App() {
                 <Route path="resenas" element={<ProviderReviews />} />
                 <Route path="calendario" element={<ProviderCalendar />} />
                 <Route path="contrataciones/:id" element={<ProviderBookingDetail />} />
+                <Route path="cotizaciones" element={<ProviderQuoteRequests />} />
+                <Route path="cotizaciones/:id" element={<ProviderQuoteRequestDetail />} />
               </Route>
 
               <Route path="admin" element={<PrivateRoute role="ADMIN"><AdminLayout /></PrivateRoute>}>

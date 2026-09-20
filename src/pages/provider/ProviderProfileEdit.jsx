@@ -27,7 +27,7 @@ export default function ProviderProfileEdit() {
       setProfile(p)
       setForm({
         businessName: p.businessName, bio: p.bio || '', yearsExperience: p.yearsExperience || '',
-        city: p.city, postalCode: p.postalCode || '', categoryIds: p.categories.map((c) => c.id),
+        city: p.city || '', postalCode: p.postalCode || '', categoryIds: p.categories.map((c) => c.id),
       })
     }).finally(() => setLoading(false))
   }, [])
@@ -38,6 +38,13 @@ export default function ProviderProfileEdit() {
 
   function setPersonal(field) {
     return (e) => setPersonalForm((f) => ({ ...f, [field]: e.target.value }))
+  }
+
+  function toggleCategory(id) {
+    setForm((f) => ({
+      ...f,
+      categoryIds: f.categoryIds.includes(id) ? f.categoryIds.filter((c) => c !== id) : [...f.categoryIds, id],
+    }))
   }
 
   async function handlePersonalSubmit(e) {
@@ -52,13 +59,6 @@ export default function ProviderProfileEdit() {
     } finally {
       setSaving(false)
     }
-  }
-
-  function toggleCategory(id) {
-    setForm((f) => ({
-      ...f,
-      categoryIds: f.categoryIds.includes(id) ? f.categoryIds.filter((c) => c !== id) : [...f.categoryIds, id],
-    }))
   }
 
   async function handleSubmit(e) {
@@ -90,34 +90,107 @@ export default function ProviderProfileEdit() {
   if (loading) return <p className="text-gray-500">Cargando...</p>
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Mi perfil de prestador</h1>
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Información</h1>
 
-      <div className="card p-6 mb-4 flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 text-2xl overflow-hidden shrink-0">
-          {profile?.profileImageUrl ? <img src={profile.profileImageUrl} alt="" className="w-full h-full object-cover" /> : <span role="img" aria-label="Prestador de servicio">👷</span>}
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <RatingStars value={profile?.averageRating} />
-            <span className="text-sm text-gray-500">({profile?.totalReviews ?? 0} resenas)</span>
+      <div className="card p-4 mb-6 border-2 border-primary-200 flex items-center gap-4">
+        <div className="relative shrink-0">
+          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 overflow-hidden">
+            {profile?.profileImageUrl ? (
+              <img src={profile.profileImageUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+            )}
           </div>
-          {profile?.isVerified && <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full mt-1 inline-block">Verificado</span>}
-          <label className="block text-xs text-primary-700 mt-2 cursor-pointer hover:underline">
-            Cambiar foto
+          <label className="absolute -bottom-1 -right-1 bg-primary-600 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-primary-700">
+            Editar
             <input type="file" accept="image/*" className="hidden" onChange={handleImage} />
           </label>
         </div>
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-900 truncate">{personalForm.firstName} {personalForm.lastName}</p>
+          <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+          {personalForm.phone && <p className="text-sm text-gray-500 truncate">{personalForm.phone}</p>}
+          <div className="flex items-center gap-2 mt-1">
+            <RatingStars value={profile?.averageRating} size="text-xs" />
+            <span className="text-xs text-gray-500">({profile?.totalReviews ?? 0} resenas)</span>
+            {profile?.isVerified && <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">Verificado</span>}
+          </div>
+        </div>
       </div>
 
-      <div className="card p-6 mb-4">
-        <h2 className="font-semibold text-gray-900 mb-4">Mis datos personales</h2>
-        <form onSubmit={handlePersonalSubmit} className="space-y-4">
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Correo</span>
-            <input disabled className="input bg-gray-50 text-gray-500" value={user?.email || ''} />
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+        <div className="card p-6">
+          <h2 className="font-semibold text-gray-900 mb-4">Mi negocio</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <label className="block text-sm">
+              <span className="block text-gray-700 mb-1 font-medium">Nombre del negocio u oficio</span>
+              <input required className="input" value={form.businessName} onChange={set('businessName')} />
+            </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">Estado/Ciudad donde ofreces tus servicios</span>
+                <input required className="input" value={form.city} onChange={set('city')} />
+              </label>
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">
+                  Código Postal <span className="text-gray-400 font-normal">(opcional)</span>
+                </span>
+                <input className="input" inputMode="numeric" maxLength={5} placeholder="Ej. 06000"
+                  value={form.postalCode} onChange={set('postalCode')} />
+                <span className="block text-xs text-gray-400 mt-1">Nos ayuda a mostrarte a clientes cercanos con más precisión.</span>
+              </label>
+            </div>
+
+            <label className="block text-sm">
+              <span className="block text-gray-700 mb-1 font-medium">Años de experiencia</span>
+              <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
+            </label>
+
+            <label className="block text-sm">
+              <span className="block text-gray-700 mb-1 font-medium">Sobre tu trabajo</span>
+              <textarea
+                className="input"
+                rows={3}
+                placeholder="Ej. Soy plomero certificado con 8 años de experiencia. Me gusta explicar cada paso antes de empezar y no me voy hasta que quedes satisfecho."
+                value={form.bio}
+                onChange={set('bio')}
+              />
+              <span className="block text-xs text-gray-400 mt-1">
+                Esta es tu presentación personal para el cliente (quién eres, cómo trabajas), no la lista de servicios que ofreces — esos los agregas por separado en "Mis servicios".
+              </span>
+            </label>
+
+            <div>
+              <span className="block text-gray-700 mb-2 text-sm font-medium">Categorías de servicio</span>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((c) => (
+                  <button
+                    type="button"
+                    key={c.id}
+                    onClick={() => toggleCategory(c.id)}
+                    className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                      form.categoryIds.includes(c.id)
+                        ? 'bg-primary-600 border-primary-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-600 hover:border-primary-400'
+                    }`}
+                  >
+                    {c.icon} {c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button type="submit" disabled={saving} className="btn-primary w-full">
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+          </form>
+        </div>
+
+        <div className="card p-6 lg:sticky lg:top-6">
+          <h2 className="font-semibold text-gray-900 mb-4">Mis datos personales</h2>
+          <form onSubmit={handlePersonalSubmit} className="space-y-4">
             <label className="block text-sm">
               <span className="block text-gray-700 mb-1 font-medium">Nombre</span>
               <input required className="input" value={personalForm.firstName} onChange={setPersonal('firstName')} />
@@ -126,68 +199,20 @@ export default function ProviderProfileEdit() {
               <span className="block text-gray-700 mb-1 font-medium">Apellido</span>
               <input required className="input" value={personalForm.lastName} onChange={setPersonal('lastName')} />
             </label>
-          </div>
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Telefono</span>
-            <input className="input" value={personalForm.phone} onChange={setPersonal('phone')} />
-          </label>
-          <button type="submit" disabled={saving} className="btn-primary w-full">
-            {saving ? 'Guardando...' : 'Guardar datos personales'}
-          </button>
-        </form>
-      </div>
+            <label className="block text-sm">
+              <span className="block text-gray-700 mb-1 font-medium">Correo electrónico</span>
+              <input disabled className="input bg-gray-50 text-gray-500" value={user?.email || ''} />
+            </label>
+            <label className="block text-sm">
+              <span className="block text-gray-700 mb-1 font-medium">Número de teléfono</span>
+              <input inputMode="numeric" maxLength={10} className="input" value={personalForm.phone} onChange={setPersonal('phone')} />
+            </label>
 
-      <div className="card p-6">
-        <h2 className="font-semibold text-gray-900 mb-4">Mi negocio</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Nombre del negocio u oficio</span>
-            <input required className="input" value={form.businessName} onChange={set('businessName')} />
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="block text-sm">
-              <span className="block text-gray-700 mb-1 font-medium">Ciudad</span>
-              <input required className="input" value={form.city} onChange={set('city')} />
-            </label>
-            <label className="block text-sm">
-              <span className="block text-gray-700 mb-1 font-medium">
-                Codigo postal <span className="text-gray-400 font-normal">(opcional)</span>
-              </span>
-              <input className="input" inputMode="numeric" maxLength={5} placeholder="Ej. 06000"
-                value={form.postalCode} onChange={set('postalCode')} />
-            </label>
-          </div>
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Anos de experiencia</span>
-            <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
-          </label>
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Sobre tu trabajo</span>
-            <textarea className="input" rows={3} value={form.bio} onChange={set('bio')} />
-          </label>
-          <div>
-            <span className="block text-gray-700 mb-2 text-sm font-medium">Categorias de servicio</span>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((c) => (
-                <button
-                  type="button"
-                  key={c.id}
-                  onClick={() => toggleCategory(c.id)}
-                  className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
-                    form.categoryIds.includes(c.id)
-                      ? 'bg-primary-600 border-primary-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-600 hover:border-primary-400'
-                  }`}
-                >
-                  {c.icon} {c.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <button type="submit" disabled={saving} className="btn-primary w-full">
-            {saving ? 'Guardando...' : 'Guardar cambios'}
-          </button>
-        </form>
+            <button type="submit" disabled={saving} className="btn-primary w-full">
+              {saving ? 'Guardando...' : 'Guardar datos personales'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )

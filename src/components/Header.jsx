@@ -65,6 +65,7 @@ export default function Header() {
                   {isAdmin && <Link to="/admin" className="block px-4 py-2 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Panel administrativo</Link>}
                   {isProvider && <Link to="/prestador" className="block px-4 py-2 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Mi panel de prestador</Link>}
                   <Link to="/mis-contrataciones" className="block px-4 py-2 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Mis contrataciones</Link>
+                  <Link to="/cotizaciones" className="block px-4 py-2 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Mis cotizaciones</Link>
                   <Link to="/mi-cuenta" className="block px-4 py-2 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>Mi cuenta</Link>
                   <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">Cerrar sesion</button>
                 </div>

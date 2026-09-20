@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { listCategories, getServiceTypes } from '../api/categories'
 import { searchProviders } from '../api/providers'
 import ProviderCard from '../components/ProviderCard'
@@ -260,8 +260,15 @@ export default function Providers() {
 
   return (
     <div className="container-app py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Encuentra al prestador ideal</h1>
-      <p className="text-sm text-gray-500 mb-6">Plomeros, electricistas, limpieza, jardinería y más — cerca de ti.</p>
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Encuentra al prestador ideal</h1>
+          <p className="text-sm text-gray-500">Plomeros, electricistas, limpieza, jardinería y más — cerca de ti.</p>
+        </div>
+        <Link to="/cotizaciones/nueva" className="btn-primary text-sm shrink-0">
+          Solicitar cotización
+        </Link>
+      </div>
 
       <div className="card p-4 mb-6">
         <div className="flex flex-wrap items-start gap-3">

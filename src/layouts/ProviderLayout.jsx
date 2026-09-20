@@ -8,6 +8,7 @@ const LINKS = [
   { to: '/prestador', end: true, icon: '🗂️', label: 'Tablero de trabajos' },
   { to: '/prestador/servicios', icon: '🧰', label: 'Mis servicios' },
   { to: '/prestador/calendario', icon: '📅', label: 'Calendario' },
+  { to: '/prestador/cotizaciones', icon: '📋', label: 'Cotizaciones' },
   { to: '/prestador/resenas', icon: '⭐', label: 'Resenas' },
   { to: '/prestador/perfil', icon: '👤', label: 'Mi perfil' },
 ]
