@@ -4,6 +4,7 @@ import { getProviderDetail } from '../api/providers'
 import RatingStars from '../components/RatingStars'
 import TrustBadge from '../components/TrustBadge'
 import { formatCurrency, formatDateOnly, formatResponseTime } from '../utils/format'
+import { SERVICE_DAYS_LABELS, SERVICE_HOURS_LABELS } from '../utils/providerSchedule'
 
 const PRICE_TYPE_LABELS = { FIJO: 'precio fijo', POR_HORA: 'por hora', COTIZACION: 'a cotizar' }
 const DURATION_UNIT_LABELS = { MINUTOS: 'min', DIAS: 'dias', SEMANAS: 'semanas', MESES: 'meses' }
@@ -108,6 +109,18 @@ export default function ProviderDetail() {
                   Responde en {formatResponseTime(provider.averageResponseMinutes)}
                 </span>
               ) : null}
+              {provider.serviceDays ? (
+                <span className="flex items-center gap-1.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  {SERVICE_DAYS_LABELS[provider.serviceDays]}
+                </span>
+              ) : null}
+              {provider.serviceHours ? (
+                <span className="flex items-center gap-1.5">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  {SERVICE_HOURS_LABELS[provider.serviceHours]}
+                </span>
+              ) : null}
             </div>
           </div>
 
@@ -170,7 +183,7 @@ export default function ProviderDetail() {
                       <span className="font-semibold text-gray-900">
                         {formatCurrency(s.price)} <span className="text-xs font-normal text-gray-500">({PRICE_TYPE_LABELS[s.priceType]})</span>
                       </span>
-                      <Link to={`/contratar/${s.id}`} className="btn-primary text-sm">Solicitar cotización</Link>
+                      <Link to={`/contratar/${s.id}`} className="btn-primary text-sm">Elegir servicio</Link>
                     </div>
                   </div>
                 ))}
@@ -206,7 +219,7 @@ export default function ProviderDetail() {
         </div>
 
         {/* Sidebar */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-20">
           <div className="card p-5">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 shrink-0 overflow-hidden">

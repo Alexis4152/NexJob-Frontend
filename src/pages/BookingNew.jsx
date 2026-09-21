@@ -4,6 +4,7 @@ import { getPublicService, getProviderBusySlots } from '../api/providers'
 import { createBooking } from '../api/bookings'
 import { formatCurrency } from '../utils/format'
 import { useNotify } from '../context/NotifyContext'
+import { SERVICE_DAYS_LABELS, SERVICE_HOURS_LABELS } from '../utils/providerSchedule'
 
 const PRICE_TYPE_LABELS = { FIJO: 'precio fijo', POR_HORA: 'por hora', COTIZACION: 'a cotizar' }
 const PAYMENT_METHOD_LABELS = { EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia' }
@@ -91,24 +92,24 @@ export default function BookingNew() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <label className="block text-sm">
               <span className="block text-gray-700 mb-1 font-medium">Describe lo que necesitas</span>
-              <textarea className="input" rows={3} value={form.description} onChange={set('description')} />
+              <textarea className="input" rows={3} placeholder="Ej. Necesito que revisen una fuga de agua en la cocina" value={form.description} onChange={set('description')} />
             </label>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block text-sm">
                 <span className="block text-gray-700 mb-1 font-medium">Direccion de la visita</span>
-                <input required className="input" value={form.addressLine} onChange={set('addressLine')} />
+                <input required className="input" placeholder="Ej. Av. Insurgentes Sur 1234, Col. Del Valle" value={form.addressLine} onChange={set('addressLine')} />
               </label>
               <label className="block text-sm">
                 <span className="block text-gray-700 mb-1 font-medium">Ciudad</span>
-                <input required className="input" value={form.city} onChange={set('city')} />
+                <input required className="input" placeholder="Ej. Ciudad de Mexico" value={form.city} onChange={set('city')} />
               </label>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block text-sm">
                 <span className="block text-gray-700 mb-1 font-medium">Fecha y hora de la visita</span>
-                <input required type="datetime-local" className={`input ${isSlotTaken ? 'border-red-400' : ''}`} value={form.scheduledAt} onChange={set('scheduledAt')} />
+                <input required type="datetime-local" lang="es-MX" className={`input ${isSlotTaken ? 'border-red-400' : ''}`} value={form.scheduledAt} onChange={set('scheduledAt')} />
                 {isSlotTaken && (
                   <span className="text-xs text-red-600 mt-1 block">Este horario ya esta apartado con el prestador. Elige otro.</span>
                 )}
@@ -150,7 +151,7 @@ export default function BookingNew() {
           </form>
         </div>
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-20">
           <div className="card p-5">
             <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Servicio</h2>
             <p className="font-semibold text-gray-900 mb-0.5">{service.title}</p>
@@ -158,6 +159,22 @@ export default function BookingNew() {
             <p className="text-lg font-bold text-gray-900">
               {formatCurrency(service.price)} <span className="text-xs font-normal text-gray-500">({PRICE_TYPE_LABELS[service.priceType]})</span>
             </p>
+            {(service.providerServiceDays || service.providerServiceHours) && (
+              <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500">
+                {service.providerServiceDays && (
+                  <span className="flex items-center gap-1.5">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    {SERVICE_DAYS_LABELS[service.providerServiceDays]}
+                  </span>
+                )}
+                {service.providerServiceHours && (
+                  <span className="flex items-center gap-1.5">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    {SERVICE_HOURS_LABELS[service.providerServiceHours]}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {busySlots.length > 0 && (

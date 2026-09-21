@@ -5,13 +5,17 @@ import { updateMe } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
 import { useNotify } from '../../context/NotifyContext'
 import RatingStars from '../../components/RatingStars'
+import { SERVICE_DAYS_LABELS, SERVICE_HOURS_LABELS } from '../../utils/providerSchedule'
 
 export default function ProviderProfileEdit() {
   const { user, updateUserInMemory } = useAuth()
   const { notify } = useNotify()
   const [categories, setCategories] = useState([])
   const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ businessName: '', bio: '', yearsExperience: '', city: '', postalCode: '', categoryIds: [] })
+  const [form, setForm] = useState({
+    businessName: '', bio: '', yearsExperience: '', city: '', postalCode: '', categoryIds: [],
+    serviceDays: '', serviceHours: '',
+  })
   const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -28,6 +32,7 @@ export default function ProviderProfileEdit() {
       setForm({
         businessName: p.businessName, bio: p.bio || '', yearsExperience: p.yearsExperience || '',
         city: p.city || '', postalCode: p.postalCode || '', categoryIds: p.categories.map((c) => c.id),
+        serviceDays: p.serviceDays || '', serviceHours: p.serviceHours || '',
       })
     }).finally(() => setLoading(false))
   }, [])
@@ -65,7 +70,12 @@ export default function ProviderProfileEdit() {
     e.preventDefault()
     setSaving(true)
     try {
-      const res = await updateMyProviderProfile({ ...form, yearsExperience: form.yearsExperience ? Number(form.yearsExperience) : null })
+      const res = await updateMyProviderProfile({
+        ...form,
+        yearsExperience: form.yearsExperience ? Number(form.yearsExperience) : null,
+        serviceDays: form.serviceDays || null,
+        serviceHours: form.serviceHours || null,
+      })
       setProfile(res.data.data)
       notify('Perfil actualizado', 'success')
     } catch (err) {
@@ -147,6 +157,31 @@ export default function ProviderProfileEdit() {
               <span className="block text-gray-700 mb-1 font-medium">Años de experiencia</span>
               <input type="number" min={0} className="input" value={form.yearsExperience} onChange={set('yearsExperience')} />
             </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">
+                  Días de servicio <span className="text-gray-400 font-normal">(opcional)</span>
+                </span>
+                <select className="input" value={form.serviceDays} onChange={set('serviceDays')}>
+                  <option value="">Selecciona</option>
+                  {Object.entries(SERVICE_DAYS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">
+                  Horario de servicio <span className="text-gray-400 font-normal">(opcional)</span>
+                </span>
+                <select className="input" value={form.serviceHours} onChange={set('serviceHours')}>
+                  <option value="">Selecciona</option>
+                  {Object.entries(SERVICE_HOURS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
             <label className="block text-sm">
               <span className="block text-gray-700 mb-1 font-medium">Sobre tu trabajo</span>

@@ -3,9 +3,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { listCategories } from '../../api/categories'
 import { getMyService, createMyService, updateMyService, addMyServiceImage, removeMyServiceImage } from '../../api/services'
 import { useNotify } from '../../context/NotifyContext'
+import { formatCurrency } from '../../utils/format'
 
 const DESCRIPTION_MAX_LENGTH = 500
 const MAX_IMAGES = 3
+const PRICE_TYPE_LABELS = { FIJO: 'Precio fijo', POR_HORA: 'Por hora', COTIZACION: 'A cotizar' }
+const DURATION_UNIT_LABELS = { MINUTOS: 'min', DIAS: 'dias', SEMANAS: 'semanas', MESES: 'meses' }
 
 export default function ProviderServiceForm() {
   const { id } = useParams()
@@ -137,13 +140,16 @@ export default function ProviderServiceForm() {
 
   if (loading) return <p className="text-gray-500">Cargando...</p>
 
+  const selectedCategory = categories.find((c) => String(c.id) === String(form.categoryId))
+
   return (
-    <div className="max-w-lg">
+    <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{isEdit ? 'Editar servicio' : 'Nuevo servicio'}</h1>
         <Link to="/prestador/servicios" className="text-sm text-primary-700 hover:underline">← Mis servicios</Link>
       </div>
 
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
       <div className="card p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block text-sm">
@@ -258,6 +264,46 @@ export default function ProviderServiceForm() {
             {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Publicar servicio'}
           </button>
         </form>
+      </div>
+
+      <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+        <div className="card p-5">
+          <h2 className="text-sm font-bold text-gray-900 mb-4">Vista previa</h2>
+          {selectedCategory && (
+            <p className="text-xs text-gray-500 mb-1">{selectedCategory.icon} {selectedCategory.name}</p>
+          )}
+          <p className="font-semibold text-gray-900">{form.title || 'Titulo del servicio'}</p>
+          {form.description && <p className="text-sm text-gray-500 mt-1 line-clamp-3">{form.description}</p>}
+
+          <div className="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Precio</span>
+              <span className="font-medium text-gray-900">
+                {form.price ? formatCurrency(form.price) : '—'}
+                {form.priceType === 'POR_HORA' && form.price ? '/hr' : ''}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Tipo</span>
+              <span className="text-gray-700">{PRICE_TYPE_LABELS[form.priceType]}</span>
+            </div>
+            {form.estimatedDurationValue && (
+              <div className="flex items-center justify-between">
+                <span className="text-gray-500">Duracion estimada</span>
+                <span className="text-gray-700">{form.estimatedDurationValue} {DURATION_UNIT_LABELS[form.estimatedDurationUnit]}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Ubicacion</span>
+              <span className="text-gray-700">{form.atClientLocation ? 'A domicilio' : 'En el negocio'}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-500">Fotos</span>
+              <span className="text-gray-700">{totalImages}/{MAX_IMAGES}</span>
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   )

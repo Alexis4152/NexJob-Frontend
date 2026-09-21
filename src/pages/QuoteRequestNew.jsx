@@ -138,7 +138,7 @@ export default function QuoteRequestNew() {
             </form>
           </div>
 
-          <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+          <div className="flex flex-col gap-4 lg:sticky lg:top-20">
             <div className="bg-primary-50 rounded-xl p-5">
               <p className="text-sm font-semibold text-primary-800 mb-1">Por que te lo pedimos</p>
               <p className="text-xs text-primary-800 leading-relaxed">Tu solicitud se envia solo a prestadores que realmente puedan trasladarse hasta ti (dentro de 50 km). Sin tu ubicacion no podemos saber quien esta cerca, y podriamos notificar a alguien de otro estado.</p>
@@ -211,7 +211,7 @@ export default function QuoteRequestNew() {
             </form>
           </div>
 
-          <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+          <div className="flex flex-col gap-4 lg:sticky lg:top-20">
             <div className="bg-primary-50 rounded-xl p-5">
               <p className="text-sm font-semibold text-primary-800 mb-1">Aun no eliges a nadie</p>
               <p className="text-xs text-primary-800 leading-relaxed">Tu solicitud se enviara automaticamente a los prestadores mejor calificados de esta categoria cerca de ti. Tu eliges hasta que veas los precios.</p>

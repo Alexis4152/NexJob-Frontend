@@ -136,7 +136,7 @@ export default function MyProfile() {
           </form>
         </div>
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-20">
           <div className="card p-5">
             <h2 className="text-sm font-bold text-gray-900 mb-4">Resumen de mi cuenta</h2>
             <div className="flex flex-col gap-3">
