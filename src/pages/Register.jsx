@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { welcomeIllustrationSvg } from '../components/WelcomeIllustration'
+import { validateRequiredText, validateEmailField, validatePasswordField } from '../utils/formValidationEs'
 
 const welcomeIllustrationUrl = `data:image/svg+xml,${encodeURIComponent(welcomeIllustrationSvg)}`
 
@@ -15,6 +16,17 @@ export default function Register() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    // Validacion propia en vez de confiar en la burbuja nativa del navegador (ver
+    // utils/formValidationEs.js): garantiza el mensaje en espanol en cualquier navegador.
+    const validationError =
+      validateRequiredText(form.firstName, 'El nombre') ||
+      validateRequiredText(form.lastName, 'El apellido') ||
+      validateEmailField(form.email) ||
+      validatePasswordField(form.password)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
     setLoading(true)
     try {
       await register(form)
@@ -45,21 +57,21 @@ export default function Register() {
 
             {error && <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-3 py-2 mb-4">{error}</div>}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <label className="block text-sm">
                   <span className="block text-gray-700 mb-1 font-medium">Nombre</span>
-                  <input required className="input" value={form.firstName} onChange={set('firstName')} />
+                  <input className="input" value={form.firstName} onChange={set('firstName')} />
                 </label>
                 <label className="block text-sm">
                   <span className="block text-gray-700 mb-1 font-medium">Apellido</span>
-                  <input required className="input" value={form.lastName} onChange={set('lastName')} />
+                  <input className="input" value={form.lastName} onChange={set('lastName')} />
                 </label>
               </div>
 
               <label className="block text-sm">
                 <span className="block text-gray-700 mb-1 font-medium">Correo electrónico</span>
-                <input required type="email" className="input" placeholder="correo@gmail.com" value={form.email} onChange={set('email')} />
+                <input type="email" className="input" placeholder="correo@gmail.com" value={form.email} onChange={set('email')} />
               </label>
 
               <label className="block text-sm">
@@ -71,7 +83,7 @@ export default function Register() {
 
               <label className="block text-sm">
                 <span className="block text-gray-700 mb-1 font-medium">Contraseña</span>
-                <input required minLength={8} type="password" className="input" value={form.password} onChange={set('password')} />
+                <input type="password" className="input" value={form.password} onChange={set('password')} />
               </label>
 
               <button type="submit" disabled={loading} className="btn-primary w-full">

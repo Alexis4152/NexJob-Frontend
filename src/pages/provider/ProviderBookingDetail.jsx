@@ -3,7 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getProviderBookingDetail, updateBookingStatus, uploadBookingEvidence } from '../../api/bookings'
 import { useNotify } from '../../context/NotifyContext'
 import StatusBadge from '../../components/StatusBadge'
-import { formatCurrency, formatDate } from '../../utils/format'
+import BookingDescription from '../../components/BookingDescription'
+import QuoteTicket from '../../components/QuoteTicket'
+import { formatCurrency, formatDate, formatDateOrTBD } from '../../utils/format'
 
 const PAYMENT_METHOD_LABELS = { EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia' }
 
@@ -36,6 +38,19 @@ export default function ProviderBookingDetail() {
       load()
     } catch (err) {
       notify(err.response?.data?.message || 'No se pudo subir la evidencia', 'error')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  async function handleConfirmQuoteAccepted() {
+    setWorking(true)
+    try {
+      await updateBookingStatus(id, 'ACEPTADO')
+      notify('Contratacion confirmada', 'success')
+      load()
+    } catch (err) {
+      notify(err.response?.data?.message || 'No se pudo confirmar', 'error')
     } finally {
       setWorking(false)
     }
@@ -83,15 +98,50 @@ export default function ProviderBookingDetail() {
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 mb-1">Visita</h3>
-            <p className="text-gray-600">{formatDate(booking.scheduledAt)}</p>
-            <p className="text-gray-600">{booking.addressLine}, {booking.city}</p>
+            <p className="text-gray-600">{formatDateOrTBD(booking.scheduledAt)}</p>
+            <p className="text-gray-600">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</p>
           </div>
         </div>
 
         {booking.description && (
           <div className="mb-6">
             <h3 className="font-semibold text-gray-900 mb-1 text-sm">El cliente solicito</h3>
-            <p className="text-sm text-gray-600">{booking.description}</p>
+            <BookingDescription description={booking.description} textClassName="text-sm text-gray-600" />
+          </div>
+        )}
+
+        {booking.referenceImageUrl && (
+          <div className="mb-6">
+            <h3 className="font-semibold text-gray-900 mb-2 text-sm">Foto de referencia del cliente</h3>
+            <a href={booking.referenceImageUrl} target="_blank" rel="noreferrer">
+              <img src={booking.referenceImageUrl} alt="Referencia del cliente" className="w-32 h-32 object-cover rounded-lg" />
+            </a>
+          </div>
+        )}
+
+        {booking.status === 'SOLICITADO' && booking.priceType === 'COTIZACION' && (
+          <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 mb-6 flex items-center justify-between gap-3 flex-wrap">
+            <p className="text-sm text-blue-800">Este servicio es "a cotizar": prepara el desglose de materiales y costos antes de aceptar.</p>
+            <Link to={`/prestador/contrataciones/${id}/cotizar`} className="btn-primary text-sm shrink-0">Preparar cotizacion</Link>
+          </div>
+        )}
+
+        {(booking.status === 'COTIZADO' || (booking.priceType === 'COTIZACION' && booking.quoteItems?.length > 0)) && (
+          <div className="mb-6">
+            <QuoteTicket booking={booking} />
+            {booking.status === 'COTIZADO' && (
+              <p className="text-xs text-blue-700">Esperando respuesta del cliente.</p>
+            )}
+            {booking.status === 'COTIZACION_ACEPTADA' && (
+              <div>
+                <p className="text-xs text-teal-700 bg-teal-50 rounded-lg px-3 py-2 mb-3">
+                  El cliente acepto el precio. Confirma para agendar la visita.
+                </p>
+                <button onClick={handleConfirmQuoteAccepted} disabled={working} className="btn-primary w-full">
+                  Confirmar y agendar
+                </button>
+              </div>
+            )}
           </div>
         )}
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { adminGetBookingDetail } from '../../api/bookings'
 import StatusBadge from '../../components/StatusBadge'
-import { formatCurrency, formatDate } from '../../utils/format'
+import { formatCurrency, formatDate, formatDateOrTBD } from '../../utils/format'
 
 export default function AdminBookingDetail() {
   const { id } = useParams()
@@ -44,8 +44,8 @@ export default function AdminBookingDetail() {
 
         <div className="text-sm mb-6">
           <h3 className="font-semibold text-gray-900 mb-1">Visita</h3>
-          <p className="text-gray-600">{formatDate(booking.scheduledAt)}</p>
-          <p className="text-gray-600">{booking.addressLine}, {booking.city}</p>
+          <p className="text-gray-600">{formatDateOrTBD(booking.scheduledAt)}</p>
+          <p className="text-gray-600">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</p>
         </div>
 
         <div className="flex justify-between items-center border-t border-gray-100 pt-4 mb-6">

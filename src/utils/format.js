@@ -9,9 +9,25 @@ export function formatDate(value) {
   return new Date(value).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
+/** Como formatDate, pero para cuando el valor puede no existir todavia (ej. la fecha de visita
+ * de una contratacion "a cotizar", que se acuerda hasta aceptar la cotizacion) en vez de
+ * mostrar un espacio en blanco. */
+export function formatDateOrTBD(value) {
+  return value ? formatDate(value) : 'Por definir'
+}
+
 export function formatDateOnly(value) {
   if (!value) return ''
   return new Date(value).toLocaleDateString('es-MX', { dateStyle: 'medium' })
+}
+
+/** Formatea un LocalDate puro (ej. "2026-10-15", sin hora) como "15 de octubre de 2026".
+ * Construido con componentes locales (no new Date(string), que interpreta la fecha como UTC y
+ * puede mostrar el dia anterior segun el huso horario del visitante). */
+export function formatLocalDateEs(isoDate) {
+  if (!isoDate) return ''
+  const [y, m, d] = isoDate.split('-').map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
 /** dd/mm/yyyy, HH:mm */

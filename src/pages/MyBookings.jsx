@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { getMyBookings } from '../api/bookings'
 import StatusBadge from '../components/StatusBadge'
 import Pagination from '../components/Pagination'
-import { formatCurrency, formatDate } from '../utils/format'
+import { formatCurrency, formatDateOrTBD } from '../utils/format'
 
 export default function MyBookings() {
   const [page, setPage] = useState(0)
@@ -44,7 +44,7 @@ export default function MyBookings() {
                     <td className="px-4 py-3 font-medium text-gray-900">{b.folio}</td>
                     <td className="px-4 py-3 text-gray-600">{b.serviceTitle}</td>
                     <td className="px-4 py-3 text-gray-600">{b.providerBusinessName}</td>
-                    <td className="px-4 py-3 text-gray-500">{formatDate(b.scheduledAt)}</td>
+                    <td className="px-4 py-3 text-gray-500">{formatDateOrTBD(b.scheduledAt)}</td>
                     <td className="px-4 py-3 text-right font-medium text-gray-900">{formatCurrency(b.agreedPrice)}</td>
                     <td className="px-4 py-3"><StatusBadge status={b.status} /></td>
                     <td className="px-4 py-3 text-right">

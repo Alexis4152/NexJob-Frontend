@@ -1,5 +1,7 @@
 const STATUS_STYLES = {
   SOLICITADO: 'bg-yellow-100 text-yellow-800',
+  COTIZADO: 'bg-blue-100 text-blue-800',
+  COTIZACION_ACEPTADA: 'bg-teal-100 text-teal-800',
   ACEPTADO: 'bg-blue-100 text-blue-800',
   EN_PROCESO: 'bg-indigo-100 text-indigo-800',
   CONCLUIDO: 'bg-purple-100 text-purple-800',
@@ -10,6 +12,8 @@ const STATUS_STYLES = {
 
 const STATUS_LABELS = {
   SOLICITADO: 'Solicitado',
+  COTIZADO: 'Cotizado',
+  COTIZACION_ACEPTADA: 'Cotizacion aceptada',
   ACEPTADO: 'Aceptado',
   EN_PROCESO: 'En proceso',
   CONCLUIDO: 'Concluido',

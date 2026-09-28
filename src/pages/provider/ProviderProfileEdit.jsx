@@ -5,6 +5,7 @@ import { updateMe } from '../../api/auth'
 import { useAuth } from '../../context/AuthContext'
 import { useNotify } from '../../context/NotifyContext'
 import RatingStars from '../../components/RatingStars'
+import EmailVerificationModal from '../../components/EmailVerificationModal'
 import { SERVICE_DAYS_LABELS, SERVICE_HOURS_LABELS } from '../../utils/providerSchedule'
 
 export default function ProviderProfileEdit() {
@@ -19,6 +20,7 @@ export default function ProviderProfileEdit() {
   const [personalForm, setPersonalForm] = useState({ firstName: '', lastName: '', phone: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
 
   useEffect(() => {
     if (user) setPersonalForm({ firstName: user.firstName || '', lastName: user.lastName || '', phone: user.phone || '' })
@@ -238,6 +240,17 @@ export default function ProviderProfileEdit() {
               <span className="block text-gray-700 mb-1 font-medium">Correo electrónico</span>
               <input disabled className="input bg-gray-50 text-gray-500" value={user?.email || ''} />
             </label>
+
+            {user?.emailVerified ? (
+              <p className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                Correo verificado
+              </p>
+            ) : (
+              <button type="button" onClick={() => setShowVerifyModal(true)} className="btn-primary text-sm">
+                Verificar correo
+              </button>
+            )}
             <label className="block text-sm">
               <span className="block text-gray-700 mb-1 font-medium">Número de teléfono</span>
               <input inputMode="numeric" maxLength={10} className="input" value={personalForm.phone} onChange={setPersonal('phone')} />
@@ -249,6 +262,8 @@ export default function ProviderProfileEdit() {
           </form>
         </div>
       </div>
+
+      <EmailVerificationModal open={showVerifyModal} onClose={() => setShowVerifyModal(false)} />
     </div>
   )
 }

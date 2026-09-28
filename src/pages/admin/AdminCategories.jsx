@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { adminListCategories, adminCreateCategory, adminUpdateCategory, adminDeactivateCategory } from '../../api/categories'
 import { useNotify } from '../../context/NotifyContext'
 import AdminPagination from '../../components/AdminPagination'
@@ -101,6 +102,7 @@ export default function AdminCategories() {
                   <th className="px-4 py-3 font-medium">Icono</th>
                   <th className="px-4 py-3 font-medium">Nombre</th>
                   <th className="px-4 py-3 font-medium">Descripcion</th>
+                  <th className="px-4 py-3 font-medium">Preguntas</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -110,14 +112,22 @@ export default function AdminCategories() {
                     <td className="px-4 py-3 text-lg">{c.icon}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
                     <td className="px-4 py-3 text-gray-500">{c.description}</td>
+                    <td className="px-4 py-3">
+                      {c.intakeFields?.length > 0 ? (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">{c.intakeFields.length} definidas</span>
+                      ) : (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">Sin definir</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <Link to={`/admin/categorias/${c.id}/preguntas`} className="text-primary-700 hover:underline mr-3">Preguntas</Link>
                       <button onClick={() => startEdit(c)} className="text-primary-700 hover:underline mr-3">Editar</button>
                       <button onClick={() => handleDeactivate(c.id)} className="text-red-600 hover:underline">Desactivar</button>
                     </td>
                   </tr>
                 ))}
                 {result.content.length === 0 && (
-                  <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-400">Sin categorias.</td></tr>
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-400">Sin categorias.</td></tr>
                 )}
               </tbody>
             </table>

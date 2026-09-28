@@ -77,6 +77,10 @@ export default function BookingResendPanel({ booking, categoryName, onClose }) {
   )
 
   const selectedUrgency = URGENCY_OPTIONS.find((o) => o.value === form.urgency)
+  // El servicio elegido en el nuevo prestador puede ser "a cotizar" aunque el original no lo
+  // fuera (o viceversa): la direccion/fecha de visita solo aplican si NO es "a cotizar" (ver
+  // BookingNew.jsx, mismo criterio).
+  const isCotizacion = selectedService?.priceType === 'COTIZACION'
 
   function cancelResend() {
     setSelectedProvider(null)
@@ -94,7 +98,14 @@ export default function BookingResendPanel({ booking, categoryName, onClose }) {
     setError('')
     setSubmitting(true)
     try {
-      const res = await createBooking({ serviceId: Number(selectedServiceId), ...form })
+      const payload = {
+        serviceId: Number(selectedServiceId),
+        ...form,
+        addressLine: isCotizacion ? null : form.addressLine,
+        city: isCotizacion ? null : form.city,
+        scheduledAt: isCotizacion ? null : form.scheduledAt,
+      }
+      const res = await createBooking(payload)
       notify('Solicitud reenviada al nuevo prestador', 'success')
       navigate(`/mis-contrataciones/${res.data.data.id}`)
     } catch (err) {
@@ -197,19 +208,27 @@ export default function BookingResendPanel({ booking, categoryName, onClose }) {
             <span className="block text-gray-700 mb-1 font-medium">Describe lo que necesitas</span>
             <textarea className="input" rows={3} value={form.description} onChange={set('description')} />
           </label>
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Direccion de la visita</span>
-            <input required className="input" value={form.addressLine} onChange={set('addressLine')} />
-          </label>
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Ciudad</span>
-            <input required className="input" value={form.city} onChange={set('city')} />
-          </label>
-          <label className="block text-sm">
-            <span className="block text-gray-700 mb-1 font-medium">Fecha y hora de la visita</span>
-            <input required type="datetime-local" className="input" value={form.scheduledAt} onChange={set('scheduledAt')} />
-            <span className="text-xs text-gray-500 mt-1 block">Prellenada con la fecha original; ajustala si ya no te sirve.</span>
-          </label>
+          {isCotizacion ? (
+            <div className="bg-gray-50 border border-dashed border-gray-200 rounded-lg px-3 py-2.5">
+              <span className="text-xs text-gray-500 leading-relaxed">Este servicio es "a cotizar": la direccion y fecha de la visita se acuerdan hasta que aceptes la cotizacion del prestador.</span>
+            </div>
+          ) : (
+            <>
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">Direccion de la visita</span>
+                <input required className="input" value={form.addressLine || ''} onChange={set('addressLine')} />
+              </label>
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">Ciudad</span>
+                <input required className="input" value={form.city || ''} onChange={set('city')} />
+              </label>
+              <label className="block text-sm">
+                <span className="block text-gray-700 mb-1 font-medium">Fecha y hora de la visita</span>
+                <input required type="datetime-local" className="input" value={form.scheduledAt || ''} onChange={set('scheduledAt')} />
+                <span className="text-xs text-gray-500 mt-1 block">Prellenada con la fecha original; ajustala si ya no te sirve.</span>
+              </label>
+            </>
+          )}
           <label className="block text-sm">
             <span className="block text-gray-700 mb-1 font-medium">Que tan pronto lo necesitas</span>
             <div className="relative">

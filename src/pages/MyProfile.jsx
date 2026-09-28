@@ -6,6 +6,7 @@ import { updateMe, uploadMyPhoto } from '../api/auth'
 import { getMyBookings } from '../api/bookings'
 import { getMyQuoteRequests } from '../api/quoteRequests'
 import { formatDateOnly } from '../utils/format'
+import EmailVerificationModal from '../components/EmailVerificationModal'
 
 export default function MyProfile() {
   const { user, updateUserInMemory } = useAuth()
@@ -16,6 +17,7 @@ export default function MyProfile() {
   })
   const [saving, setSaving] = useState(false)
   const [counts, setCounts] = useState({ bookings: null, quoteRequests: null })
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
 
   useEffect(() => {
     getMyBookings({ page: 0, size: 1 }).then((r) => setCounts((c) => ({ ...c, bookings: r.data.data.totalElements })))
@@ -101,6 +103,17 @@ export default function MyProfile() {
               <input disabled className="input bg-gray-50 text-gray-500" value={user?.email || ''} />
             </label>
 
+            {user?.emailVerified ? (
+              <p className="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                Correo verificado
+              </p>
+            ) : (
+              <button type="button" onClick={() => setShowVerifyModal(true)} className="btn-primary text-sm">
+                Verificar correo
+              </button>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <label className="block text-sm">
                 <span className="block text-gray-700 mb-1 font-medium">Numero de telefono</span>
@@ -152,6 +165,8 @@ export default function MyProfile() {
           </div>
         </div>
       </div>
+
+      <EmailVerificationModal open={showVerifyModal} onClose={() => setShowVerifyModal(false)} />
     </div>
   )
 }

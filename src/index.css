@@ -56,4 +56,28 @@
     background-size: contain;
     background-position: center;
   }
+
+  /* Ticket de cotizacion (ver QuoteTicket.jsx): borde "perforado" tipo recibo, los
+     semicirculos se recortan con el color de fondo de la pagina (bg-gray-50). */
+  .quote-ticket {
+    position: relative;
+  }
+  .quote-ticket::before,
+  .quote-ticket::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 14px;
+    background-image: radial-gradient(circle at 10px 10px, #F9FAFB 9px, transparent 9.5px);
+    background-size: 20px 20px;
+    background-repeat: repeat-x;
+  }
+  .quote-ticket::before {
+    top: -7px;
+  }
+  .quote-ticket::after {
+    bottom: -7px;
+    transform: rotate(180deg);
+  }
 }

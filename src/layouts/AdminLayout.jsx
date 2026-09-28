@@ -5,6 +5,7 @@ import { usePlatformConfig } from '../context/PlatformConfigContext'
 
 const LINKS = [
   { to: '/admin', end: true, icon: '📊', label: 'Dashboard' },
+  { to: '/admin/analitica', icon: '📈', label: 'Analitica' },
   { to: '/admin/categorias', icon: '🏷️', label: 'Categorias' },
   { to: '/admin/prestadores', icon: '🛠️', label: 'Prestadores' },
   { to: '/admin/clientes', icon: '👥', label: 'Clientes' },

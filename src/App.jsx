@@ -3,6 +3,8 @@ import { AuthProvider } from './context/AuthContext'
 import { NotifyProvider } from './context/NotifyContext'
 import { PlatformConfigProvider } from './context/PlatformConfigContext'
 import PrivateRoute from './components/PrivateRoute'
+import AnalyticsTracker from './components/AnalyticsTracker'
+import EmailVerificationBanner from './components/EmailVerificationBanner'
 
 import PublicLayout from './layouts/PublicLayout'
 import ProviderLayout from './layouts/ProviderLayout'
@@ -31,6 +33,7 @@ import ProviderServices from './pages/provider/ProviderServices'
 import ProviderServiceForm from './pages/provider/ProviderServiceForm'
 import ProviderProfileEdit from './pages/provider/ProviderProfileEdit'
 import ProviderBookingDetail from './pages/provider/ProviderBookingDetail'
+import ProviderBookingQuote from './pages/provider/ProviderBookingQuote'
 import ProviderReviews from './pages/provider/ProviderReviews'
 import ProviderCalendar from './pages/provider/ProviderCalendar'
 import ProviderQuoteRequests from './pages/provider/ProviderQuoteRequests'
@@ -38,19 +41,23 @@ import ProviderQuoteRequestDetail from './pages/provider/ProviderQuoteRequestDet
 
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminCategories from './pages/admin/AdminCategories'
+import AdminCategoryQuestions from './pages/admin/AdminCategoryQuestions'
 import AdminProviders from './pages/admin/AdminProviders'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminBookings from './pages/admin/AdminBookings'
 import AdminBookingDetail from './pages/admin/AdminBookingDetail'
 import AdminSupport from './pages/admin/AdminSupport'
 import AdminPlatformConfig from './pages/admin/AdminPlatformConfig'
+import AdminAnalytics from './pages/admin/AdminAnalytics'
 
 export default function App() {
   return (
     <BrowserRouter>
+      <AnalyticsTracker />
       <PlatformConfigProvider>
         <AuthProvider>
           <NotifyProvider>
+            <EmailVerificationBanner />
             <Routes>
               <Route element={<PublicLayout />}>
                 <Route index element={<Home />} />
@@ -83,13 +90,16 @@ export default function App() {
                 <Route path="resenas" element={<ProviderReviews />} />
                 <Route path="calendario" element={<ProviderCalendar />} />
                 <Route path="contrataciones/:id" element={<ProviderBookingDetail />} />
+                <Route path="contrataciones/:id/cotizar" element={<ProviderBookingQuote />} />
                 <Route path="cotizaciones" element={<ProviderQuoteRequests />} />
                 <Route path="cotizaciones/:id" element={<ProviderQuoteRequestDetail />} />
               </Route>
 
               <Route path="admin" element={<PrivateRoute role="ADMIN"><AdminLayout /></PrivateRoute>}>
                 <Route index element={<AdminDashboard />} />
+                <Route path="analitica" element={<AdminAnalytics />} />
                 <Route path="categorias" element={<AdminCategories />} />
+                <Route path="categorias/:id/preguntas" element={<AdminCategoryQuestions />} />
                 <Route path="prestadores" element={<AdminProviders />} />
                 <Route path="clientes" element={<AdminUsers />} />
                 <Route path="contrataciones" element={<AdminBookings />} />

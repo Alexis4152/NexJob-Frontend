@@ -1,19 +1,29 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { getMyBookingDetail, cancelBooking, approveBooking, reviewBooking } from '../api/bookings'
+import { getMyBookingDetail, cancelBooking, approveBooking, reviewBooking, acceptBookingQuote, rejectBookingQuote } from '../api/bookings'
 import { useNotify } from '../context/NotifyContext'
 import StatusBadge from '../components/StatusBadge'
 import RatingStars from '../components/RatingStars'
 import BookingResendPanel from '../components/BookingResendPanel'
-import { formatCurrency, formatDate } from '../utils/format'
+import BookingDescription from '../components/BookingDescription'
+import QuoteTicket from '../components/QuoteTicket'
+import { formatCurrency, formatDate, formatDateOrTBD, formatLocalDateEs } from '../utils/format'
 
 const PAYMENT_METHOD_LABELS = { EFECTIVO: 'Efectivo', TARJETA: 'Tarjeta', TRANSFERENCIA: 'Transferencia' }
-const HIDE_SHARED_DETAILS_FOR = ['SOLICITADO', 'ACEPTADO', 'EN_PROCESO', 'CONCLUIDO', 'APROBADO', 'RECHAZADO']
+const HIDE_SHARED_DETAILS_FOR = ['SOLICITADO', 'COTIZADO', 'COTIZACION_ACEPTADA', 'ACEPTADO', 'EN_PROCESO', 'CONCLUIDO', 'APROBADO', 'RECHAZADO']
 
 const TIMELINE_STEPS = [
   {
     status: 'SOLICITADO', label: 'Solicitado', hint: 'Cliente envia',
     icon: <><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></>,
+  },
+  {
+    status: 'COTIZADO', label: 'Cotizado', hint: 'Prestador cotiza', onlyForCotizacion: true,
+    icon: <><path d="M9 7h6M9 11h6M9 15h3"></path><path d="M5 4h14v16l-3-2-3 2-3-2-3 2-2-2z"></path></>,
+  },
+  {
+    status: 'COTIZACION_ACEPTADA', label: 'Cotizacion aceptada', hint: 'Cliente confirma precio', onlyForCotizacion: true,
+    icon: <path d="M20 6L9 17l-5-5"></path>,
   },
   {
     status: 'ACEPTADO', label: 'Aceptado', hint: 'Prestador confirma',
@@ -44,6 +54,11 @@ export default function MyBookingDetail() {
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [showResend, setShowResend] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+  const [dateConfirmed, setDateConfirmed] = useState(false)
+  const [deliveryMethod, setDeliveryMethod] = useState('')
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [deliveryCity, setDeliveryCity] = useState('')
 
   function load() {
     setLoading(true)
@@ -62,6 +77,40 @@ export default function MyBookingDetail() {
       load()
     } catch (err) {
       notify(err.response?.data?.message || 'No se pudo cancelar', 'error')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  async function handleAcceptQuote() {
+    const ok = await confirmDialog(`¿Aceptar la cotizacion por ${formatCurrency(booking.quoteTotal)}? La contratacion se confirmara con este precio.`, { title: 'Aceptar cotizacion' })
+    if (!ok) return
+    setWorking(true)
+    try {
+      await acceptBookingQuote(id, {
+        deliveryMethod,
+        addressLine: deliveryMethod === 'DOMICILIO' ? deliveryAddress : undefined,
+        city: deliveryMethod === 'DOMICILIO' ? deliveryCity : undefined,
+      })
+      notify('Cotizacion aceptada', 'success')
+      load()
+    } catch (err) {
+      notify(err.response?.data?.message || 'No se pudo aceptar la cotizacion', 'error')
+    } finally {
+      setWorking(false)
+    }
+  }
+
+  async function handleRejectQuote() {
+    const ok = await confirmDialog('¿Rechazar esta cotizacion? La contratacion se cancelara y podras buscar otro prestador.', { title: 'Rechazar cotizacion', danger: true })
+    if (!ok) return
+    setWorking(true)
+    try {
+      await rejectBookingQuote(id, rejectReason || undefined)
+      notify('Cotizacion rechazada', 'success')
+      load()
+    } catch (err) {
+      notify(err.response?.data?.message || 'No se pudo rechazar la cotizacion', 'error')
     } finally {
       setWorking(false)
     }
@@ -101,7 +150,15 @@ export default function MyBookingDetail() {
   if (loading) return <div className="container-app py-12 text-gray-500">Cargando...</div>
   if (!booking) return <div className="container-app py-12 text-gray-500">Contratacion no encontrada.</div>
 
-  const timelineIndex = TIMELINE_STEPS.findIndex((s) => s.status === booking.status)
+  const timelineSteps = TIMELINE_STEPS.filter((s) => !s.onlyForCotizacion || booking.priceType === 'COTIZACION')
+  const timelineIndex = timelineSteps.findIndex((s) => s.status === booking.status)
+
+  // Antes de aceptar la cotizacion, el cliente debe confirmar que la fecha estimada le sirve
+  // (si el prestador dio una) y decir donde se entrega el trabajo -- este es el momento en que
+  // por fin se sabe la direccion real, ya que no se pidio al solicitar un servicio "a cotizar".
+  const needsDateConfirmation = !!booking.estimatedDeliveryDate
+  const canAcceptQuote = (!needsDateConfirmation || dateConfirmed)
+    && (deliveryMethod === 'RECOGER_SITIO' || (deliveryMethod === 'DOMICILIO' && deliveryAddress.trim() && deliveryCity.trim()))
 
   return (
     <div className="container-app py-8">
@@ -114,7 +171,7 @@ export default function MyBookingDetail() {
           <div className="card p-6">
             <div className="relative flex items-start justify-between">
               <div className="absolute top-4 left-[10%] right-[10%] h-0.5 bg-gray-100" />
-              {TIMELINE_STEPS.map((step, i) => {
+              {timelineSteps.map((step, i) => {
                 const done = i <= timelineIndex
                 return (
                   <div key={step.status} className="relative flex-1 flex flex-col items-center text-center px-0.5">
@@ -151,7 +208,7 @@ export default function MyBookingDetail() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Fecha</span>
-                <span className="font-medium text-gray-900 text-right">{formatDate(booking.scheduledAt)}</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Estado</span>
@@ -183,7 +240,7 @@ export default function MyBookingDetail() {
                 {booking.description && (
                   <div>
                     <span className="text-gray-500 block mb-0.5">Descripcion</span>
-                    <span className="text-gray-900">{booking.description}</span>
+                    <BookingDescription description={booking.description} textClassName="text-gray-900" />
                   </div>
                 )}
               </div>
@@ -198,6 +255,133 @@ export default function MyBookingDetail() {
 
             <button onClick={handleCancel} disabled={working} className="btn-danger text-sm w-full">
               Cancelar solicitud
+            </button>
+          </div>
+        ) : booking.status === 'COTIZADO' ? (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 text-blue-600 mb-5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 7h6M9 11h6M9 15h3"></path><path d="M5 4h14v16l-3-2-3 2-3-2-3 2-2-2z"></path></svg>
+              <span className="text-base font-bold text-gray-900">{booking.providerBusinessName} te envio una cotizacion</span>
+            </div>
+
+            <div className="flex flex-col gap-2.5 text-sm mb-5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Prestador</span>
+                <span className="font-medium text-gray-900 text-right">{booking.providerBusinessName}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Servicio</span>
+                <span className="font-medium text-gray-900 text-right">{booking.serviceTitle}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Fecha</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
+              </div>
+            </div>
+
+            {booking.description && (
+              <div className="mb-5">
+                <span className="text-gray-500 block mb-0.5 text-sm">Tu solicitud original</span>
+                <BookingDescription description={booking.description} />
+              </div>
+            )}
+
+            <QuoteTicket booking={booking} />
+
+            <div className="border border-gray-200 rounded-lg p-4 mb-5">
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm">Antes de aceptar</h3>
+
+              {needsDateConfirmation && (
+                <label className="flex items-start gap-2 text-sm mb-4">
+                  <input type="checkbox" className="w-4 h-4 mt-0.5" checked={dateConfirmed} onChange={(e) => setDateConfirmed(e.target.checked)} />
+                  <span className="text-gray-700">
+                    Confirmo que la fecha de entrega estimada (<span className="font-semibold">{formatLocalDateEs(booking.estimatedDeliveryDate)}</span>) me funciona.
+                  </span>
+                </label>
+              )}
+
+              <span className="block text-gray-700 mb-2 text-sm font-medium">¿Donde se entrega el producto?</span>
+              <div className="flex flex-col gap-2 mb-3">
+                <label className={`flex items-center gap-2 text-sm border rounded-lg px-3 py-2 cursor-pointer ${deliveryMethod === 'DOMICILIO' ? 'border-primary-600 bg-primary-50' : 'border-gray-300'}`}>
+                  <input type="radio" name="deliveryMethod" checked={deliveryMethod === 'DOMICILIO'} onChange={() => setDeliveryMethod('DOMICILIO')} />
+                  Entregar en mi domicilio
+                </label>
+                <label className={`flex items-center gap-2 text-sm border rounded-lg px-3 py-2 cursor-pointer ${deliveryMethod === 'RECOGER_SITIO' ? 'border-primary-600 bg-primary-50' : 'border-gray-300'}`}>
+                  <input type="radio" name="deliveryMethod" checked={deliveryMethod === 'RECOGER_SITIO'} onChange={() => setDeliveryMethod('RECOGER_SITIO')} />
+                  Recoger en el sitio del prestador
+                </label>
+              </div>
+
+              {deliveryMethod === 'DOMICILIO' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="block text-sm">
+                    <span className="block text-gray-700 mb-1 font-medium">Direccion</span>
+                    <input required className="input" placeholder="Ej. Av. Insurgentes Sur 1234, Col. Del Valle" value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
+                  </label>
+                  <label className="block text-sm">
+                    <span className="block text-gray-700 mb-1 font-medium">Ciudad</span>
+                    <input required className="input" placeholder="Ej. Ciudad de Mexico" value={deliveryCity} onChange={(e) => setDeliveryCity(e.target.value)} />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <label className="block text-sm mb-3">
+              <span className="block text-gray-700 mb-1 font-medium">Motivo si vas a rechazar <span className="text-gray-400 font-normal">(opcional)</span></span>
+              <input className="input" placeholder="Ej. No se ajusta a mi presupuesto" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />
+            </label>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button type="button" onClick={handleRejectQuote} disabled={working} className="btn-secondary text-sm flex-1">Rechazar</button>
+              <button type="button" onClick={handleAcceptQuote} disabled={working || !canAcceptQuote} className="btn-primary text-sm flex-1">Aceptar cotizacion</button>
+            </div>
+          </div>
+        ) : booking.status === 'COTIZACION_ACEPTADA' ? (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 text-teal-600 mb-5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12l3 3 5-6"></path></svg>
+              <span className="text-base font-bold text-gray-900">Aceptaste la cotizacion</span>
+            </div>
+
+            <div className="flex flex-col gap-2.5 text-sm mb-5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Prestador</span>
+                <span className="font-medium text-gray-900 text-right">{booking.providerBusinessName}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Servicio</span>
+                <span className="font-medium text-gray-900 text-right">{booking.serviceTitle}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Precio acordado</span>
+                <span className="font-medium text-gray-900 text-right">{formatCurrency(booking.agreedPrice)}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Fecha</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Entrega</span>
+                <span className="font-medium text-gray-900 text-right">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-gray-500">Estado</span>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold bg-teal-100 text-teal-800 px-2.5 py-1 rounded-full">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                  Esperando confirmacion del prestador
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 border border-dashed border-gray-200 rounded-lg px-3 py-2.5 flex gap-2 items-start mb-5">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span className="text-xs text-gray-500 leading-relaxed">
+                El precio ya quedo acordado. El prestador debe confirmar para agendar la visita.
+              </span>
+            </div>
+
+            <button onClick={handleCancel} disabled={working} className="btn-danger text-sm w-full">
+              Cancelar contratacion
             </button>
           </div>
         ) : booking.status === 'ACEPTADO' ? (
@@ -218,7 +402,7 @@ export default function MyBookingDetail() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Fecha</span>
-                <span className="font-medium text-gray-900 text-right">{formatDate(booking.scheduledAt)}</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Estado</span>
@@ -249,12 +433,12 @@ export default function MyBookingDetail() {
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-0.5">Direccion de la visita</span>
-                  <span className="text-gray-900">{booking.addressLine}, {booking.city}</span>
+                  <span className="text-gray-900">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</span>
                 </div>
                 {booking.description && (
                   <div>
                     <span className="text-gray-500 block mb-0.5">Descripcion</span>
-                    <span className="text-gray-900">{booking.description}</span>
+                    <BookingDescription description={booking.description} textClassName="text-gray-900" />
                   </div>
                 )}
               </div>
@@ -282,7 +466,7 @@ export default function MyBookingDetail() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Fecha</span>
-                <span className="font-medium text-gray-900 text-right">{formatDate(booking.scheduledAt)}</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Estado</span>
@@ -313,12 +497,12 @@ export default function MyBookingDetail() {
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-0.5">Direccion de la visita</span>
-                  <span className="text-gray-900">{booking.addressLine}, {booking.city}</span>
+                  <span className="text-gray-900">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</span>
                 </div>
                 {booking.description && (
                   <div>
                     <span className="text-gray-500 block mb-0.5">Descripcion</span>
-                    <span className="text-gray-900">{booking.description}</span>
+                    <BookingDescription description={booking.description} textClassName="text-gray-900" />
                   </div>
                 )}
               </div>
@@ -349,7 +533,7 @@ export default function MyBookingDetail() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Fecha</span>
-                <span className="font-medium text-gray-900 text-right">{formatDate(booking.scheduledAt)}</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Estado</span>
@@ -380,12 +564,12 @@ export default function MyBookingDetail() {
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-0.5">Direccion de la visita</span>
-                  <span className="text-gray-900">{booking.addressLine}, {booking.city}</span>
+                  <span className="text-gray-900">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</span>
                 </div>
                 {booking.description && (
                   <div>
                     <span className="text-gray-500 block mb-0.5">Descripcion</span>
-                    <span className="text-gray-900">{booking.description}</span>
+                    <BookingDescription description={booking.description} textClassName="text-gray-900" />
                   </div>
                 )}
               </div>
@@ -409,7 +593,7 @@ export default function MyBookingDetail() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Fecha</span>
-                <span className="font-medium text-gray-900 text-right">{formatDate(booking.scheduledAt)}</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Estado</span>
@@ -440,12 +624,12 @@ export default function MyBookingDetail() {
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-0.5">Direccion de la visita</span>
-                  <span className="text-gray-900">{booking.addressLine}, {booking.city}</span>
+                  <span className="text-gray-900">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</span>
                 </div>
                 {booking.description && (
                   <div>
                     <span className="text-gray-500 block mb-0.5">Descripcion</span>
-                    <span className="text-gray-900">{booking.description}</span>
+                    <BookingDescription description={booking.description} textClassName="text-gray-900" />
                   </div>
                 )}
               </div>
@@ -469,7 +653,7 @@ export default function MyBookingDetail() {
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Fecha</span>
-                <span className="font-medium text-gray-900 text-right">{formatDate(booking.scheduledAt)}</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateOrTBD(booking.scheduledAt)}</span>
               </div>
               <div className="flex items-center justify-between gap-3">
                 <span className="text-gray-500">Estado</span>
@@ -500,12 +684,12 @@ export default function MyBookingDetail() {
                 </div>
                 <div>
                   <span className="text-gray-500 block mb-0.5">Direccion de la visita</span>
-                  <span className="text-gray-900">{booking.addressLine}, {booking.city}</span>
+                  <span className="text-gray-900">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</span>
                 </div>
                 {booking.description && (
                   <div>
                     <span className="text-gray-500 block mb-0.5">Descripcion</span>
-                    <span className="text-gray-900">{booking.description}</span>
+                    <BookingDescription description={booking.description} textClassName="text-gray-900" />
                   </div>
                 )}
               </div>
@@ -538,8 +722,8 @@ export default function MyBookingDetail() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Visita</h3>
-                <p className="text-gray-600">{formatDate(booking.scheduledAt)}</p>
-                <p className="text-gray-600">{booking.addressLine}, {booking.city}</p>
+                <p className="text-gray-600">{formatDateOrTBD(booking.scheduledAt)}</p>
+                <p className="text-gray-600">{booking.addressLine ? `${booking.addressLine}, ${booking.city}` : 'Por definir'}</p>
               </div>
             </div>
           </>
@@ -548,7 +732,7 @@ export default function MyBookingDetail() {
         {!HIDE_SHARED_DETAILS_FOR.includes(booking.status) && booking.description && (
           <div className="mb-6">
             <h3 className="font-semibold text-gray-900 mb-1 text-sm">Descripcion</h3>
-            <p className="text-sm text-gray-600">{booking.description}</p>
+            <BookingDescription description={booking.description} textClassName="text-sm text-gray-600" />
           </div>
         )}
 

@@ -12,11 +12,19 @@ export const approveBooking = (id, { cardNumber, file } = {}) => {
   return api.post(`/bookings/${id}/approve`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
 }
 export const reviewBooking = (id, data) => api.post(`/bookings/${id}/review`, data)
+export const uploadBookingReferenceImage = (id, file) => {
+  const form = new FormData()
+  form.append('file', file)
+  return api.post(`/bookings/${id}/reference-image`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+}
+export const acceptBookingQuote = (id, data) => api.post(`/bookings/${id}/quote/accept`, data)
+export const rejectBookingQuote = (id, reason) => api.post(`/bookings/${id}/quote/reject`, { reason })
 
 // ── Prestador ────────────────────────────────────────────────
 export const getProviderBoard = () => api.get('/provider/bookings')
 export const getProviderBookingDetail = (id) => api.get(`/provider/bookings/${id}`)
 export const updateBookingStatus = (id, newStatus, note) => api.patch(`/provider/bookings/${id}/status`, { newStatus, note })
+export const submitBookingQuote = (id, data) => api.post(`/provider/bookings/${id}/quote`, data)
 export const uploadBookingEvidence = (id, file, description) => {
   const form = new FormData()
   form.append('file', file)

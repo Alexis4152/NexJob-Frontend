@@ -4,6 +4,7 @@ export const login = (data) => api.post('/auth/login', data)
 export const register = (data) => api.post('/auth/register', data)
 export const registerProvider = (data) => api.post('/auth/register-provider', data)
 export const me = () => api.get('/auth/me')
+export const refreshToken = () => api.post('/auth/refresh')
 export const updateMe = (data) => api.put('/users/me', data)
 export const uploadMyPhoto = (file) => {
   const form = new FormData()
@@ -13,3 +14,6 @@ export const uploadMyPhoto = (file) => {
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email })
 export const validateResetCode = (email, code) => api.post('/auth/validate-reset-code', { email, code })
 export const resetPassword = (email, code, newPassword) => api.post('/auth/reset-password', { email, code, newPassword })
+
+export const sendEmailVerificationCode = () => api.post('/users/me/email-verification/send')
+export const verifyEmailCode = (code) => api.post('/users/me/email-verification/verify', { code })
